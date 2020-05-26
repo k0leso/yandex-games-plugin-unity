@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en-us">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>Unity WebGL Player | %UNITY_WEB_NAME%</title>
+		<link rel="stylesheet" href="TemplateData/style.css">
+		<link rel="shortcut icon" href="TemplateData/favicon.ico" />
+		<script type="text/javascript" src="https://code.createjs.com/tweenjs-0.6.1.min.js"></script>
+		<script type="text/javascript" src="TemplateData/CSSPlugin.js"></script>
+		<script src="TemplateData/UnityProgress.js"></script>
+	</head>
+	<body class="template">
+		<div class="template-wrap clear">
+			<canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" height="%UNITY_HEIGHT%px" width="%UNITY_WIDTH%px"></canvas>
+		</div>
+		<div id="loadingBox">
+			<div id="bgBar"></div>
+			<div id="progressBar"></div>
+			<img id="spinner" src="TemplateData/spinner.gif" style="display: none; margin: 0 auto" />
+			<p id="loadingInfo">Loading...</p>
+		</div>
+		%UNITY_WEBGL_LOADER_GLUE%
+	</body>
+</html>

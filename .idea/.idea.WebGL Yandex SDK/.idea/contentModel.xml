@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="C:\Users\User\.Rider2019.3\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\User\.Rider2019.3\system\resharper-host\local\Transient\ReSharperHost\v193\SolutionCaches\_WebGL Yandex SDK.480658133.00" t="ExcludeRecursive" />
+    <e p="D:\Unity\My Projects\koleso\yandexSDK\WebGL Yandex SDK" t="IncludeRecursive">
+      <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
+      <e p="Assets" t="Include">
+        <e p="SetImage.cs" t="Include" />
+        <e p="SetTextData.cs" t="Include" />
+        <e p="YandexSDK.cs" t="Include" />
+      </e>
+      <e p="obj" t="ExcludeRecursive" />
+      <e p="Packages" t="ExcludeRecursive" />
+      <e p="Temp\bin" t="ExcludeRecursive" />
+      <e p="WebGL Yandex SDK.sln" t="IncludeFlat" />
+    </e>
+  </component>
+</project>

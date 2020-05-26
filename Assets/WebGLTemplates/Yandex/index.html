@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>ПОМЕНЯЙ МЕНЯ</title>
+    <script src="%UNITY_WEBGL_LOADER_URL%"></script>
+    <script>
+      var unityInstance = UnityLoader.instantiate("unityContainer", "%UNITY_WEBGL_BUILD_URL%");
+    </script>
+  </head>
+  <body>
+    <div id="container">
+      <div id="gameContainer">
+      <div id="unityContainer" style="width: 1000px; height: 600px; margin: auto;"></div></div>
+    </div>
+    <div id="bottomAd"></div>
+
+    <!-- Yandex Games Page Ads -->
+    <script type="text/javascript">
+
+      function URefresh(id, render){
+        (function(w, d, n, s, t) {
+          w[n] = w[n] || [];
+          w[n].push(function() {
+            Ya.Context.AdvManager.render({
+              blockId: id,
+              renderTo: render,
+              async: true
+            });
+          });
+          t = d.getElementsByTagName("script")[0];
+          s = d.createElement("script");
+          s.type = "text/javascript";
+          s.src = "//an.yandex.ru/system/context.js";
+          s.async = true;
+          t.parentNode.insertBefore(s, t);
+        })(this, this.document,"yandexContextAsyncCallbacks");
+      }
+    
+      function LoadAds(){
+        URefresh("R-A-577777-3", "bottomAd");
+      }
+      LoadAds();
+      setInterval(LoadAds, 30000);
+    </script>
+    <!-- Yandex Games SDK -->
+    <script src="https://yandex.ru/games/sdk/v2"></script>
+    <script type="text/javascript">
+      var player;
+      var sdk;
+      YaGames.init({
+            adv: {
+                onAdvClose: wasShown => {
+                      console.info('adv closed!');
+                }
+            }
+        })
+        .then(ysdk => {
+            sdk = ysdk;
+            ysdk.adv.showFullscreenAdv({callbacks:{}});
+      });
+
+
+      function auth(){
+        sdk.auth.openAuthDialog().then(() => {
+                // Игрок успешно авторизован, теперь объект Player будет инициализирован.
+                initPlayer();
+                console.log('auth ok');
+            }).catch(() => {
+                 // Игрок не авторизован.
+                 console.log('auth failed');
+            });
+      }
+
+      function initPlayer(){
+        return sdk.getPlayer().then(_player => {
+                player = _player;       
+            }).catch(err => {
+                // Если игрок не авторизован, выбрасывает исключение USER_NOT_AUTHORIZED.
+            });
+      }
+
+      function getUserData(){
+        if(initPlayer){
+          var data = {"id" : player.getID(), "name" : player.getName(), "avatarUrlSmall" : player.getPhoto('small'), "avatarUrlMedium" : player.getPhoto('medium'), "avatarUrlLarge" : player.getPhoto('large')};
+          unityInstance.SendMessage('YandexSDK', 'StoreUserData', JSON.stringify(data));
+        }
+      }
+
+      function showFullscrenAd(){
+        sdk.adv.showFullscreenAdv({callbacks: {}});
+      }
+
+      function showRewardedAd(id){
+        sdk.adv.showRewardedVideo({
+        callbacks: {
+            onOpen: () => {
+                unityInstance.SendMessage('YandexSDK', 'OnRewardedOpen', id);
+                console.log('Video ad open.');
+            },
+            onRewarded: () => {
+                unityInstance.SendMessage('YandexSDK', 'OnRewarded', id);
+                console.log('Rewarded!');
+            },
+            onClose: () => {
+                unityInstance.SendMessage('YandexSDK', 'OnRewardedClose', id);
+                console.log('Video ad closed.');
+            }, 
+            onError: (e) => {
+                var data = {"id" : id, "error" : error};
+                unityInstance.SendMessage('YandexSDK', 'OnRewardedError', JSON.stringify(data));
+                console.log('Error while open video ad:', e);
+            }
+          }
+        })
+      }
+    </script>
+  </body>
+</html>

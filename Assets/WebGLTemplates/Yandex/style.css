@@ -1,0 +1,16 @@
+#container {
+    width:100%;
+    text-align:center;
+}
+
+#gameContainer {
+    width: 1000px;
+    height: 600px;
+    display: inline-block;
+}
+
+#bottomAd {
+    width: 1000px;
+    height: 250px;
+    margin: auto;
+}
