@@ -50,6 +50,8 @@
     <script type="text/javascript">
       var player;
       var sdk;
+      var payments = null;
+      
       YaGames.init({
             adv: {
                 onAdvClose: wasShown => {
@@ -90,7 +92,16 @@
       }
 
       function showFullscrenAd(){
-        sdk.adv.showFullscreenAdv({callbacks: {}});
+        ysdk.adv.showFullscreenAdv({
+          callbacks: {
+            onClose: function(wasShown) {
+              unityInstance.SendMessage('YandexSDK', 'OnInterstitialShown');
+            },
+            onError: function(error) {
+              unityInstance.SendMessage('YandexSDK', 'OnInterstitialFailed', error);
+            }
+          }
+        })
       }
 
       function showRewardedAd(id){
@@ -114,6 +125,26 @@
                 console.log('Error while open video ad:', e);
             }
           }
+        })
+      }
+
+      function initPayments(){
+        ysdk.getPayments().then(_payments => {
+          // Покупки доступны.
+          payments = _payments;
+        }).catch(err => {
+        })
+      }
+
+      function buy(id){
+        payments.purchase(id).then(purchase => {
+          // Покупка успешно совершена!
+          unityInstance.SendMessage('YandexSDK', 'OnPurchaseSuccess', id);
+        }).catch(err => {
+          // Покупка не удалась: в консоли разработчика не добавлен товар с таким id,
+          // пользователь не авторизовался, передумал и закрыл окно оплаты,
+          // истекло отведенное на покупку время, не хватило денег и т. д.
+          unityInstance.SendMessage('YandexSDK', 'OnPurchaseFailed', err);
         })
       }
     </script>

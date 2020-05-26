@@ -1,5 +1,13 @@
 mergeInto(LibraryManager.library, {
-  AuthUser: function() {
+  InitPurchases: function() {
+    initPayments();
+  }
+
+  Purchase: function(id) {
+    buy(id);
+  }
+
+  AuthenticateUser: function() {
     auth();
   },
 

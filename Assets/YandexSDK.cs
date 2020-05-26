@@ -11,11 +11,17 @@ public class YandexSDK : MonoBehaviour {
     [DllImport("__Internal")]
     private static extern void ShowRewardedAd(string placement);
     [DllImport("__Internal")]
-    private static extern void AuthUser();
+    private static extern void AuthenticateUser();
+    [DllImport("__Internal")]
+    private static extern void InitPurchases();
+    [DllImport("__Internal")]
+    private static extern void Purchase(string id);
 
     public UserData user;
     public event Action onUserDataReceived;
-    
+
+    public event Action onInterstitialShown;
+    public event Action<string> onInterstitialFailed;
     /// <summary>
     /// Пользователь открыл рекламу
     /// </summary>
@@ -32,6 +38,16 @@ public class YandexSDK : MonoBehaviour {
     /// Вызов/просмотр рекламы повлёк за собой ошибку
     /// </summary>
     public event Action<string> onRewardedAdError;
+    /// <summary>
+    /// Покупка успешно совершена
+    /// </summary>
+    public event Action<string> onPurchaseSuccess;
+    /// <summary>
+    /// Покупка не удалась: в консоли разработчика не добавлен товар с таким id,
+    /// пользователь не авторизовался, передумал и закрыл окно оплаты,
+    /// истекло отведенное на покупку время, не хватило денег и т. д.
+    /// </summary>
+    public event Action<string> onPurchaseFailed;
 
     private void Awake() {
         if (instance == null) {
@@ -43,9 +59,12 @@ public class YandexSDK : MonoBehaviour {
     }
 
     public void Authenticate() {
-        AuthUser();
+        AuthenticateUser();
     }
 
+    /// <summary>
+    /// Не вызывайте рекламу чаще, чем раз в три минуты
+    /// </summary>
     public void ShowInterstitial() {
         ShowFullscreenAd();
     }
@@ -57,10 +76,26 @@ public class YandexSDK : MonoBehaviour {
     public void RequestUserData() {
         GetUserData();
     }
+
+    public void InitializePurchases() {
+        InitPurchases();
+    }
+
+    public void ProcessPurchase(string id) {
+        Purchase(id);
+    }
     
     public void StoreUserData(string data) {
         user = JsonUtility.FromJson<UserData>(data);
         onUserDataReceived();
+    }
+
+    public void OnInterstitialShown() {
+        onInterstitialShown();
+    }
+
+    public void OnInterstitialError(string error) {
+        onInterstitialFailed(error);
     }
 
     public void OnRewardedOpen(string placement) {
@@ -77,6 +112,14 @@ public class YandexSDK : MonoBehaviour {
 
     public void OnRewardedError(string placement) {
         onRewardedAdError(placement);
+    }
+
+    public void OnPurchaseSuccess(string id) {
+        onPurchaseSuccess(id);
+    }
+
+    public void OnPurchaseFailed(string error) {
+        onPurchaseFailed(error);
     }
 }
 
