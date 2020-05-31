@@ -4,16 +4,17 @@
     <link rel="stylesheet" type="text/css" href="style.css">
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>ПОМЕНЯЙ МЕНЯ</title>
-    <script src="%UNITY_WEBGL_LOADER_URL%"></script>
-    <script>
-      var unityInstance = UnityLoader.instantiate("unityContainer", "%UNITY_WEBGL_BUILD_URL%");
-    </script>
+    <title>%UNITY_WEB_NAME%</title>
   </head>
   <body>
     <div id="container">
       <div id="gameContainer">
-      <div id="unityContainer" style="width: 1000px; height: 600px; margin: auto;"></div></div>
+      <div id="unityContainer" style="width: 1000px; height: 600px; margin: auto;"></div>
+      <div id="loader">
+        <img class="logo" src="logo.png">
+        <div class="spinner"></div>
+        <div class="progress"><div class="full"></div></div>
+      </div>
     </div>
     <div id="bottomAd"></div>
 
@@ -40,7 +41,7 @@
       }
     
       function LoadAds(){
-        URefresh("R-A-577777-3", "bottomAd");
+        URefresh("%UNITY_CUSTOM_BOTTOM_AD%", "bottomAd");
       }
       LoadAds();
       setInterval(LoadAds, 30000);
@@ -109,15 +110,15 @@
         callbacks: {
             onOpen: () => {
                 unityInstance.SendMessage('YandexSDK', 'OnRewardedOpen', id);
-                console.log('Video ad open.');
+                console.log('Video ad open. Id: ' + id);
             },
             onRewarded: () => {
                 unityInstance.SendMessage('YandexSDK', 'OnRewarded', id);
-                console.log('Rewarded!');
+                console.log('Rewarded! Id: ' + id);
             },
             onClose: () => {
                 unityInstance.SendMessage('YandexSDK', 'OnRewardedClose', id);
-                console.log('Video ad closed.');
+                console.log('Video ad closed. Id: ' + id);
             }, 
             onError: (e) => {
                 var data = {"id" : id, "error" : error};
@@ -148,5 +149,29 @@
         })
       }
     </script>
+
+    <script src="%UNITY_WEBGL_LOADER_URL%"></script>
+    <script>
+    var unityInstance = UnityLoader.instantiate("unityContainer", "%UNITY_WEBGL_BUILD_URL%", {onProgress: UnityProgress});
+    
+    function UnityProgress(unityInstance, progress) {
+      if (!unityInstance.Module) {
+        return;
+      }
+      const loader = document.querySelector("#loader");
+      if (!unityInstance.progress) {
+        const progress = document.querySelector("#loader .progress");
+        progress.style.display = "block";
+        unityInstance.progress = progress.querySelector(".full");
+        loader.querySelector(".spinner").style.display = "none";
+      }
+      unityInstance.progress.style.transform = `scaleX(${progress})`;
+      if (progress === 1 && !unityInstance.removeTimeout) {
+        unityInstance.removeTimeout = setTimeout(function() {
+            loader.style.display = "none";
+      }, 0);
+      }
+    }
+  </script>
   </body>
 </html>
