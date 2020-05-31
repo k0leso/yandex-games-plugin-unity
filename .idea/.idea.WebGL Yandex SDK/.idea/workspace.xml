@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3af4c8bd-0061-4935-9771-d68ee475eeee" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.WebGL Yandex SDK/.idea/indexLayout.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.WebGL Yandex SDK/.idea/indexLayout.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.WebGL Yandex SDK/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.WebGL Yandex SDK/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Plugins/yandexProvider.jslib" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/yandexProvider.jslib" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/WebGLTemplates/Yandex/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/WebGLTemplates/Yandex/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/YandexSDK.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/YandexSDK.cs" afterDir="false" />
-    </list>
+    <list default="true" id="3af4c8bd-0061-4935-9771-d68ee475eeee" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -71,7 +65,7 @@
       <option name="presentableId" value="Default" />
       <updated>1590437762940</updated>
       <workItem from="1590437771539" duration="17320000" />
-      <workItem from="1590487112274" duration="2843000" />
+      <workItem from="1590487112274" duration="3504000" />
     </task>
     <servers />
   </component>
