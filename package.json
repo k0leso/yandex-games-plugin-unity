@@ -14,14 +14,14 @@
   "dependencies": {},
   "repository": {
     "type": "git",
-    "url": "https://github.com/X-Crew/Morpeh"
+    "url": "https://github.com/k0leso/yandex-games-plugin-unity"
   },
   "samples": [
    {
 
      "displayName": "Core Sample",
      "description": "Interstitial, rewarded and user data sample",
-     "path": "Samples~"
+     "path": "Samples~/CoreSample"
    }
  ]
 }
