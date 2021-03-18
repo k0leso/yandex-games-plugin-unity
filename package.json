@@ -1,0 +1,27 @@
+{
+  "name": "com.k0fe.yandexgamessdk",
+  "author": "k0fe",
+  "displayName": "Yandex Games SDK",
+  "description": "Unofficial Yandex Games SDK provider for Unity.",
+  "unity": "2019.4",
+  "version": "1.0",
+  "keywords": [
+    "yandex",
+    "sdk",
+    "webgl",
+    "html"
+  ],
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/X-Crew/Morpeh"
+  },
+  "samples": [
+   {
+
+     "displayName": "Core Sample",
+     "description": "Interstitial, rewarded and user data sample",
+     "path": "Samples~"
+   }
+ ]
+}
