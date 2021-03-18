@@ -57,6 +57,8 @@ public class YandexSDK : MonoBehaviour {
     /// </summary>
     public event Action<string> onPurchaseFailed;
 
+    public event Action onClose;
+
     public Queue<int> rewardedAdPlacementsAsInt = new Queue<int>();
     public Queue<string> rewardedAdsPlacements = new Queue<string>();
 
@@ -177,6 +179,14 @@ public class YandexSDK : MonoBehaviour {
     /// <param name="error"></param>
     public void OnPurchaseFailed(string error) {
         onPurchaseFailed(error);
+    }
+    
+    /// <summary>
+    /// Browser tab has been closed
+    /// </summary>
+    /// <param name="error"></param>
+    public void OnClose() {
+        onClose.Invoke();
     }
 }
 

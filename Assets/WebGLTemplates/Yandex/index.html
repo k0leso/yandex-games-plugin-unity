@@ -62,7 +62,7 @@
         })
         .then(ysdk => {
             sdk = ysdk;
-            ysdk.adv.showFullscreenAdv({callbacks:{}});
+            sdk.adv.showFullscreenAdv({callbacks:{}});
       });
 
 
@@ -93,7 +93,7 @@
       }
 
       function showFullscrenAd(){
-        ysdk.adv.showFullscreenAdv({
+        sdk.adv.showFullscreenAdv({
           callbacks: {
             onClose: function(wasShown) {
               unityInstance.SendMessage('YandexSDK', 'OnInterstitialShown');
@@ -130,7 +130,7 @@
       }
 
       function initPayments(){
-        ysdk.getPayments().then(_payments => {
+        sdk.getPayments().then(_payments => {
           // Покупки доступны.
           payments = _payments;
         }).catch(err => {
@@ -148,12 +148,21 @@
           unityInstance.SendMessage('YandexSDK', 'OnPurchaseFailed', err);
         })
       }
+
+      window.onbeforeunload = function(e) {
+        console.log("Calling OnClose from Browser!");
+        gameInstance.SendMessage("YandexSDK", "OnClose");
+    
+        var dialogText = "You game has been saved!  Would you like to continue unloading the page?";
+        e.returnValue = dialogText;
+        return dialogText;
+      };
     </script>
 
     <script src="%UNITY_WEBGL_LOADER_URL%"></script>
     <script>
     var unityInstance = UnityLoader.instantiate("unityContainer", "%UNITY_WEBGL_BUILD_URL%", {onProgress: UnityProgress});
-    
+
     function UnityProgress(unityInstance, progress) {
       if (!unityInstance.Module) {
         return;
