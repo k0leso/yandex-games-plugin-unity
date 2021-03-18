@@ -22,6 +22,12 @@
      "displayName": "Core Sample",
      "description": "Interstitial, rewarded and user data sample",
      "path": "Samples~/CoreSample"
+   },
+   {
+
+     "displayName": "WebGLTemplates",
+     "description": "Basic WebGL Template",
+     "path": "WebGLTemplates~/Yandex"
    }
  ]
 }
