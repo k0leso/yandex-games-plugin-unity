@@ -1,73 +1,143 @@
 <!DOCTYPE html>
 <html lang="en-us">
   <head>
-    <link rel="stylesheet" type="text/css" href="style.css">
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>%UNITY_WEB_NAME%</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>{{{ PRODUCT_NAME }}}</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
   </head>
-  <body>
-    <div id="container">
-      <div id="gameContainer">
-      <div id="unityContainer" style="width: 1000px; height: 600px; margin: auto;"></div>
-      <div id="loader">
-        <img class="logo" src="logo.png">
+  <body class="{{{ SPLASH_SCREEN_STYLE.toLowerCase() }}}">
+    <div id="unity-container" class="unity-desktop">
+      <canvas id="unity-canvas"></canvas>
+    </div>
+    <div id="loading-cover" style="display:none;">
+      <div id="unity-loading-bar">
+        <div id="unity-logo"><img src="logo.png"></div>
+        <div id="unity-progress-bar-empty" style="display: none;">
+          <div id="unity-progress-bar-full"></div>
+        </div>
         <div class="spinner"></div>
-        <div class="progress"><div class="full"></div></div>
       </div>
     </div>
-    <div id="bottomAd"></div>
+    <div id="unity-fullscreen-button" style="display: none;"></div>
+    <script>
+      const hideFullScreenButton = "{{{ HIDE_FULL_SCREEN_BUTTON }}}";
+      const buildUrl = "Build";
+      const loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
+      const config = {
+        dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+        frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+        codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+#if MEMORY_FILENAME
+        memoryUrl: buildUrl + "/{{{ MEMORY_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+        symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
+#endif
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "{{{ COMPANY_NAME }}}",
+        productName: "{{{ PRODUCT_NAME }}}",
+        productVersion: "{{{ PRODUCT_VERSION }}}",
+      };
 
-    <!-- Yandex Games Page Ads -->
-    <script type="text/javascript">
+      const container = document.querySelector("#unity-container");
+      const canvas = document.querySelector("#unity-canvas");
+      const loadingCover = document.querySelector("#loading-cover");
+      const progressBarEmpty = document.querySelector("#unity-progress-bar-empty");
+      const progressBarFull = document.querySelector("#unity-progress-bar-full");
+      const fullscreenButton = document.querySelector("#unity-fullscreen-button");
+      const spinner = document.querySelector('.spinner');
 
-      function URefresh(id, render){
-        (function(w, d, n, s, t) {
-          w[n] = w[n] || [];
-          w[n].push(function() {
-            Ya.Context.AdvManager.render({
-              blockId: id,
-              renderTo: render,
-              async: true
-            });
-          });
-          t = d.getElementsByTagName("script")[0];
-          s = d.createElement("script");
-          s.type = "text/javascript";
-          s.src = "//an.yandex.ru/system/context.js";
-          s.async = true;
-          t.parentNode.insertBefore(s, t);
-        })(this, this.document,"yandexContextAsyncCallbacks");
+      const canFullscreen = (function() {
+        for (const key of [
+            'exitFullscreen',
+            'webkitExitFullscreen',
+            'webkitCancelFullScreen',
+            'mozCancelFullScreen',
+            'msExitFullscreen',
+          ]) {
+          if (key in document) {
+            return true;
+          }
+        }
+        return false;
+      }());
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        container.className = "unity-mobile";
+        config.devicePixelRatio = 1;
       }
-    
-      function LoadAds(){
-        URefresh("%UNITY_CUSTOM_BOTTOM_AD%", "bottomAd");
-      }
-      LoadAds();
-      setInterval(LoadAds, 30000);
-    </script>
-    <!-- Yandex Games SDK -->
-    <script src="https://yandex.ru/games/sdk/v2"></script>
-    <script type="text/javascript">
+#if BACKGROUND_FILENAME
+      canvas.style.background = "url('" + buildUrl + "/{{{ BACKGROUND_FILENAME.replace(/'/g, '%27') }}}') center / cover";
+#endif
+      loadingCover.style.display = "";
+	  
       var player;
       var sdk;
       var payments = null;
-      
-      YaGames.init({
-            adv: {
-                onAdvClose: wasShown => {
-                      console.info('adv closed!');
-                }
+	  var newInstance = null;
+
+      const script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          spinner.style.display = "none";
+          progressBarEmpty.style.display = "";
+          progressBarFull.style.width = `${100 * progress}%`;
+        }).then((unityInstance) => {
+		
+		  newInstance = unityInstance;
+          loadingCover.style.display = "none";
+          if (canFullscreen) {
+            if (!hideFullScreenButton) {
+              fullscreenButton.style.display = "";
             }
-        })
+            fullscreenButton.onclick = () => {
+              unityInstance.SetFullscreen(1);
+            };
+          }
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+	  
+	  /* Yandex Games SDK */
+	  function initYaSDK() {
+	    YaGames.init()
         .then(ysdk => {
             sdk = ysdk;
-            sdk.adv.showFullscreenAdv({callbacks:{}});
-      });
-
-
-      function auth(){
-        sdk.auth.openAuthDialog().then(() => {
+            newInstance.SendMessage('YandexSDK', 'InitYaSDK');
+	    });
+	  }
+	  
+      function getEnvironment(){
+		try {
+			let envDt = sdk.environment;
+			console.log('Environment is getting');
+			newInstance.SendMessage('YandexSDK', 'Environment', JSON.stringify(envDt));
+		} catch (err) {
+		}
+	  }
+	  
+      function setToClipboard(ctext){
+		try {
+			let text = ctext + "";
+			console.log('SetToClipboard: ' + text);
+			sdk.clipboard.writeText(text)
+				.then(() => {
+				
+				})
+				.catch((err) => {
+				
+				});
+		} catch (err) {
+		}
+	  }
+	
+	  function auth(){
+		sdk.auth.openAuthDialog().then(() => {
                 // Игрок успешно авторизован, теперь объект Player будет инициализирован.
                 initPlayer();
                 console.log('auth ok');
@@ -88,18 +158,39 @@
       function getUserData(){
         if(initPlayer){
           var data = {"id" : player.getID(), "name" : player.getName(), "avatarUrlSmall" : player.getPhoto('small'), "avatarUrlMedium" : player.getPhoto('medium'), "avatarUrlLarge" : player.getPhoto('large')};
-          unityInstance.SendMessage('YandexSDK', 'StoreUserData', JSON.stringify(data));
+          newInstance.SendMessage('YandexSDK', 'StoreUserData', JSON.stringify(data));
         }
       }
+	  
+	  
+	  function getGameData(){
+        if(initPlayer){
+			player.getData().then(_data =>{
+			  console.log('Data is getting');
+			  console.log(JSON.stringify(_data));
+			  newInstance.SendMessage('YandexSDK', 'GameUserData', JSON.stringify(_data));
+		   });
+		}
+	  }
+
+	  function setGameData(_data){
+        if(initPlayer){
+		  console.log('Try Save');
+		  console.log(_data);
+		  player.setData({data : _data}, true).then(()=>{
+			console.log('saved');
+		  }).catch(()=>{console.log('unsaved')});
+		}
+	  }
 
       function showFullscrenAd(){
         sdk.adv.showFullscreenAdv({
           callbacks: {
             onClose: function(wasShown) {
-              unityInstance.SendMessage('YandexSDK', 'OnInterstitialShown');
+              newInstance.SendMessage('YandexSDK', 'OnInterstitialShown');
             },
             onError: function(error) {
-              unityInstance.SendMessage('YandexSDK', 'OnInterstitialFailed', error);
+              newInstance.SendMessage('YandexSDK', 'OnInterstitialFailed', error);
             }
           }
         })
@@ -109,20 +200,20 @@
         sdk.adv.showRewardedVideo({
         callbacks: {
             onOpen: () => {
-                unityInstance.SendMessage('YandexSDK', 'OnRewardedOpen', id);
+                newInstance.SendMessage('YandexSDK', 'OnRewardedOpen', id);
                 console.log('Video ad open. Id: ' + id);
             },
             onRewarded: () => {
-                unityInstance.SendMessage('YandexSDK', 'OnRewarded', id);
+                newInstance.SendMessage('YandexSDK', 'OnRewarded', id);
                 console.log('Rewarded! Id: ' + id);
             },
             onClose: () => {
-                unityInstance.SendMessage('YandexSDK', 'OnRewardedClose', id);
+                newInstance.SendMessage('YandexSDK', 'OnRewardedClose', id);
                 console.log('Video ad closed. Id: ' + id);
             }, 
             onError: (e) => {
                 var data = {"id" : id, "error" : error};
-                unityInstance.SendMessage('YandexSDK', 'OnRewardedError', JSON.stringify(data));
+                newInstance.SendMessage('YandexSDK', 'OnRewardedError', JSON.stringify(data));
                 console.log('Error while open video ad:', e);
             }
           }
@@ -140,12 +231,12 @@
       function buy(id){
         payments.purchase(id).then(purchase => {
           // Покупка успешно совершена!
-          unityInstance.SendMessage('YandexSDK', 'OnPurchaseSuccess', id);
+          newInstance.SendMessage('YandexSDK', 'OnPurchaseSuccess', id);
         }).catch(err => {
           // Покупка не удалась: в консоли разработчика не добавлен товар с таким id,
           // пользователь не авторизовался, передумал и закрыл окно оплаты,
           // истекло отведенное на покупку время, не хватило денег и т. д.
-          unityInstance.SendMessage('YandexSDK', 'OnPurchaseFailed', err);
+          newInstance.SendMessage('YandexSDK', 'OnPurchaseFailed', err);
         })
       }
 
@@ -157,30 +248,17 @@
         e.returnValue = dialogText;
         return dialogText;
       };
+	  
+      (function(d) {
+        var t = d.getElementsByTagName('script')[0];
+        var s = d.createElement('script');
+        s.src = 'https://yandex.ru/games/sdk/v2';
+        s.async = true;
+        t.parentNode.insertBefore(s, t);
+        s.onload = initYaSDK;
+      })(document);
+	  
+      document.body.appendChild(script);
     </script>
-
-    <script src="%UNITY_WEBGL_LOADER_URL%"></script>
-    <script>
-    var unityInstance = UnityLoader.instantiate("unityContainer", "%UNITY_WEBGL_BUILD_URL%", {onProgress: UnityProgress});
-
-    function UnityProgress(unityInstance, progress) {
-      if (!unityInstance.Module) {
-        return;
-      }
-      const loader = document.querySelector("#loader");
-      if (!unityInstance.progress) {
-        const progress = document.querySelector("#loader .progress");
-        progress.style.display = "block";
-        unityInstance.progress = progress.querySelector(".full");
-        loader.querySelector(".spinner").style.display = "none";
-      }
-      unityInstance.progress.style.transform = `scaleX(${progress})`;
-      if (progress === 1 && !unityInstance.removeTimeout) {
-        unityInstance.removeTimeout = setTimeout(function() {
-            loader.style.display = "none";
-      }, 0);
-      }
-    }
-  </script>
   </body>
 </html>

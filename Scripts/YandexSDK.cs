@@ -8,6 +8,8 @@ public class YandexSDK : MonoBehaviour {
     [DllImport("__Internal")]
     private static extern void GetUserData();
     [DllImport("__Internal")]
+    private static extern void SetToClipboard(string text);
+    [DllImport("__Internal")]
     private static extern void ShowFullscreenAd();
     /// <summary>
     /// Returns an int value which is sent to index.html
@@ -17,16 +19,25 @@ public class YandexSDK : MonoBehaviour {
     [DllImport("__Internal")]
     private static extern int ShowRewardedAd(string placement);
     [DllImport("__Internal")]
-    private static extern void GerReward();
+    private static extern void GetEnvironment();
     [DllImport("__Internal")]
     private static extern void AuthenticateUser();
+    [DllImport("__Internal")]
+    private static extern void GetGameData();
+    [DllImport("__Internal")]
+    private static extern void SetGameData(string _data);
     [DllImport("__Internal")]
     private static extern void InitPurchases();
     [DllImport("__Internal")]
     private static extern void Purchase(string id);
 
+    public bool isInited = false;
+    public string gameSave;
     public UserData user;
+    public string envData;
     public event Action onUserDataReceived;
+    public event Action onGameDataReceived;
+    public event Action onEnvironmentReceived;
 
     public event Action onInterstitialShown;
     public event Action<string> onInterstitialFailed;
@@ -71,6 +82,26 @@ public class YandexSDK : MonoBehaviour {
         }
     }
 
+    public void InitYaSDK()
+    {
+        isInited = true;
+    }
+
+    public void Environment(string data)
+    {
+        envData = JsonUtility.FromJson<string>(data);
+        onEnvironmentReceived();
+    }
+    public void GetEnvironmentData()
+    {
+        GetEnvironment();
+    }
+
+    public void CopyToClipboard(string text)
+    {
+        SetToClipboard(text);
+    }
+
     /// <summary>
     /// Call this to ask user to authenticate
     /// </summary>
@@ -112,6 +143,20 @@ public class YandexSDK : MonoBehaviour {
     public void StoreUserData(string data) {
         user = JsonUtility.FromJson<UserData>(data);
         onUserDataReceived();
+    }
+    public void RequestGameData()
+    {
+        GetGameData();
+    }
+    public void SaveGameData(string save)
+    {
+        SetGameData(save);
+    }
+
+    public void GameUserData(string data)
+    {
+        gameSave = JsonUtility.FromJson<string>(data);
+        onGameDataReceived();
     }
 
     /// <summary>
@@ -196,4 +241,13 @@ public struct UserData {
     public string avatarUrlSmall;
     public string avatarUrlMedium;
     public string avatarUrlLarge;
+}
+
+public struct EnvironmentData
+{
+    public string id;
+    public string browser_lang;
+    public string i18n_lang;
+    public string i18n_tld;
+    public Dictionary<string, string> query_parameter;
 }

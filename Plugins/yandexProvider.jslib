@@ -2,6 +2,22 @@ mergeInto(LibraryManager.library, {
   InitPurchases: function() {
     initPayments();
   },
+  
+  SetToClipboard: function(text) {
+	setToClipboard(text);
+  },
+  
+  GetEnvironment: function() {
+	getEnvironment();
+  },
+  
+  GetGameData: function() {
+	getGameData();
+  },
+  
+  SetGameData: function(_data) {
+	setGameData(_data);
+  },
 
   Purchase: function(id) {
     buy(id);
