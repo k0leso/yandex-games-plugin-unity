@@ -8,12 +8,14 @@ public class YandexSDK : MonoBehaviour {
     #region Parameters
     public static YandexSDK instance;
     public bool isInited = false;
-    public string gameSave;
+    public string gameSave = null;
     public UserData user;
     public string envData;
 
     public Queue<int> rewardedAdPlacementsAsInt = new Queue<int>();
     public Queue<string> rewardedAdsPlacements = new Queue<string>();
+
+    private bool rewardAdOpened = false;
     #endregion
 
     #region Internal
@@ -140,6 +142,7 @@ public class YandexSDK : MonoBehaviour {
     /// </summary>
     /// <param name="placement"></param>
     public void ShowRewarded(string placement) {
+        rewardAdOpened = false;
         rewardedAdPlacementsAsInt.Enqueue(Internal_ShowRewardedAd(placement));
         rewardedAdsPlacements.Enqueue(placement);
     }
@@ -227,6 +230,7 @@ public class YandexSDK : MonoBehaviour {
     /// <param name="placement"></param>
     public void Callback_OnRewardedOpen(int placement) {
         action_OnRewardedAdOpened(placement);
+        rewardAdOpened = true;
     }
 
     /// <summary>
@@ -234,8 +238,19 @@ public class YandexSDK : MonoBehaviour {
     /// </summary>
     /// <param name="placement"></param>
     public void Callback_OnRewarded(int placement) {
-        if (placement == rewardedAdPlacementsAsInt.Dequeue()) {
-            action_OnRewardedAdReward.Invoke(rewardedAdsPlacements.Dequeue());
+        if (rewardAdOpened)
+        {
+            if (placement == rewardedAdPlacementsAsInt.Dequeue())
+            {
+                action_OnRewardedAdReward.Invoke(rewardedAdsPlacements.Dequeue());
+                rewardAdOpened = false;
+            }
+        }
+        else
+        {
+            action_OnRewardedAdError("error_no_open_rewarded");
+            rewardedAdsPlacements.Clear();
+            rewardedAdPlacementsAsInt.Clear();
         }
     }
 
