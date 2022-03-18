@@ -104,19 +104,12 @@
       };
 	  
 	  /* Yandex Games SDK */
-	  function initYaSDK() {
-	    YaGames.init()
-        .then(ysdk => {
-            sdk = ysdk;
-            newInstance.SendMessage('YandexSDK', 'InitYaSDK');
-	    });
-	  }
 	  
       function getEnvironment(){
 		try {
 			let envDt = sdk.environment;
 			console.log('Environment is getting');
-			newInstance.SendMessage('YandexSDK', 'Environment', JSON.stringify(envDt));
+			newInstance.SendMessage('YandexSDK', 'Callback_Environment', JSON.stringify(envDt));
 		} catch (err) {
 		}
 	  }
@@ -154,25 +147,7 @@
                 // Если игрок не авторизован, выбрасывает исключение USER_NOT_AUTHORIZED.
             });
       }
-
-      function getUserData(){
-        if(initPlayer){
-          var data = {"id" : player.getID(), "name" : player.getName(), "avatarUrlSmall" : player.getPhoto('small'), "avatarUrlMedium" : player.getPhoto('medium'), "avatarUrlLarge" : player.getPhoto('large')};
-          newInstance.SendMessage('YandexSDK', 'StoreUserData', JSON.stringify(data));
-        }
-      }
 	  
-	  
-	  function getGameData(){
-        if(initPlayer){
-			player.getData().then(_data =>{
-			  console.log('Data is getting');
-			  console.log(JSON.stringify(_data));
-			  newInstance.SendMessage('YandexSDK', 'GameUserData', JSON.stringify(_data));
-		   });
-		}
-	  }
-
 	  function setGameData(_data){
         if(initPlayer){
 		  console.log('Try Save');
@@ -182,15 +157,40 @@
 		  }).catch(()=>{console.log('unsaved')});
 		}
 	  }
+	  
+	  function initYaSDK() {
+	    YaGames.init()
+        .then(ysdk => {
+            sdk = ysdk;
+            newInstance.SendMessage('YandexSDK', 'Callback_InitYaSDK');
+	    });
+	  }
+
+      function getUserData(){
+        if(initPlayer){
+          var data = {"id" : player.getID(), "name" : player.getName(), "avatarUrlSmall" : player.getPhoto('small'), "avatarUrlMedium" : player.getPhoto('medium'), "avatarUrlLarge" : player.getPhoto('large')};
+          newInstance.SendMessage('YandexSDK', 'Callback_StoreUserData', JSON.stringify(data));
+        }
+      }
+	  
+	  function getGameData(){
+        if(initPlayer){
+			player.getData().then(_data =>{
+			  console.log('Data is getting');
+			  console.log(JSON.stringify(_data));
+			  newInstance.SendMessage('YandexSDK', 'Callback_GameUserData', JSON.stringify(_data));
+		   });
+		}
+	  }
 
       function showFullscrenAd(){
         sdk.adv.showFullscreenAdv({
           callbacks: {
             onClose: function(wasShown) {
-              newInstance.SendMessage('YandexSDK', 'OnInterstitialShown');
+              newInstance.SendMessage('YandexSDK', 'Callback_OnInterstitialShown');
             },
             onError: function(error) {
-              newInstance.SendMessage('YandexSDK', 'OnInterstitialFailed', error);
+              newInstance.SendMessage('YandexSDK', 'Callback_OnInterstitialError', error);
             }
           }
         })
@@ -200,20 +200,20 @@
         sdk.adv.showRewardedVideo({
         callbacks: {
             onOpen: () => {
-                newInstance.SendMessage('YandexSDK', 'OnRewardedOpen', id);
+                newInstance.SendMessage('YandexSDK', 'Callback_OnRewardedOpen', id);
                 console.log('Video ad open. Id: ' + id);
             },
             onRewarded: () => {
-                newInstance.SendMessage('YandexSDK', 'OnRewarded', id);
+                newInstance.SendMessage('YandexSDK', 'Callback_OnRewarded', id);
                 console.log('Rewarded! Id: ' + id);
             },
             onClose: () => {
-                newInstance.SendMessage('YandexSDK', 'OnRewardedClose', id);
+                newInstance.SendMessage('YandexSDK', 'Callback_OnRewardedClose', id);
                 console.log('Video ad closed. Id: ' + id);
             }, 
             onError: (e) => {
                 var data = {"id" : id, "error" : error};
-                newInstance.SendMessage('YandexSDK', 'OnRewardedError', JSON.stringify(data));
+                newInstance.SendMessage('YandexSDK', 'Callback_OnRewardedError', JSON.stringify(data));
                 console.log('Error while open video ad:', e);
             }
           }
@@ -231,18 +231,18 @@
       function buy(id){
         payments.purchase(id).then(purchase => {
           // Покупка успешно совершена!
-          newInstance.SendMessage('YandexSDK', 'OnPurchaseSuccess', id);
+          newInstance.SendMessage('YandexSDK', 'Callback_OnPurchaseSuccess', id);
         }).catch(err => {
           // Покупка не удалась: в консоли разработчика не добавлен товар с таким id,
           // пользователь не авторизовался, передумал и закрыл окно оплаты,
           // истекло отведенное на покупку время, не хватило денег и т. д.
-          newInstance.SendMessage('YandexSDK', 'OnPurchaseFailed', err);
+          newInstance.SendMessage('YandexSDK', 'Callback_OnPurchaseFailed', err);
         })
       }
 
       window.onbeforeunload = function(e) {
         console.log("Calling OnClose from Browser!");
-        gameInstance.SendMessage("YandexSDK", "OnClose");
+        gameInstance.SendMessage("YandexSDK", "Callback_OnClose");
     
         var dialogText = "You game has been saved!  Would you like to continue unloading the page?";
         e.returnValue = dialogText;

@@ -4,74 +4,102 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class YandexSDK : MonoBehaviour {
+
+    #region Parameters
     public static YandexSDK instance;
+    public bool isInited = false;
+    public string gameSave;
+    public UserData user;
+    public string envData;
+
+    public Queue<int> rewardedAdPlacementsAsInt = new Queue<int>();
+    public Queue<string> rewardedAdsPlacements = new Queue<string>();
+    #endregion
+
+    #region Internal
     [DllImport("__Internal")]
-    private static extern void GetUserData();
+    private static extern void Internal_GetUserData();
     [DllImport("__Internal")]
-    private static extern void SetToClipboard(string text);
+    private static extern void Internal_SetToClipboard(string text);
     [DllImport("__Internal")]
-    private static extern void ShowFullscreenAd();
+    private static extern void Internal_ShowFullscreenAd();
     /// <summary>
     /// Returns an int value which is sent to index.html
     /// </summary>
     /// <param name="placement"></param>
     /// <returns></returns>
     [DllImport("__Internal")]
-    private static extern int ShowRewardedAd(string placement);
+    private static extern int Internal_ShowRewardedAd(string placement);
     [DllImport("__Internal")]
-    private static extern void GetEnvironment();
+    private static extern void Internal_GetEnvironment();
     [DllImport("__Internal")]
-    private static extern void AuthenticateUser();
+    private static extern void Internal_AuthenticateUser();
     [DllImport("__Internal")]
-    private static extern void GetGameData();
+    private static extern void Internal_GetGameData();
     [DllImport("__Internal")]
-    private static extern void SetGameData(string _data);
+    private static extern void Internal_SetGameData(string _data);
     [DllImport("__Internal")]
-    private static extern void InitPurchases();
+    private static extern void Internal_InitPurchases();
     [DllImport("__Internal")]
-    private static extern void Purchase(string id);
+    private static extern void Internal_Purchase(string id);
+    [DllImport("__Internal")]
+    private static extern void Internal_OpenWindow(string link);
+    #endregion
 
-    public bool isInited = false;
-    public string gameSave;
-    public UserData user;
-    public string envData;
-    public event Action onUserDataReceived;
-    public event Action onGameDataReceived;
-    public event Action onEnvironmentReceived;
-
-    public event Action onInterstitialShown;
-    public event Action<string> onInterstitialFailed;
+    #region Actions
+    /// <summary>
+    /// Библиотека была инициализирвоана
+    /// </summary>
+    public event Action action_initSdkCompleted;
+    /// <summary>
+    /// Получены данные игрока
+    /// </summary>
+    public event Action action_OnUserDataReceived;
+    /// <summary>
+    /// Получены данные игры
+    /// </summary>
+    public event Action action_OnGameDataReceived;
+    /// <summary>
+    /// Полученны данные окружения
+    /// </summary>
+    public event Action action_OnEnvironmentReceived;
+    /// <summary>
+    /// Пользователь открыл полноэкранную рекламму
+    /// </summary>
+    public event Action action_OnInterstitialShown;
+    /// <summary>
+    /// Ошибка при попытке посмотреть полноэкранную рекламу
+    /// </summary>
+    public event Action<string> action_OnInterstitialFailed;
     /// <summary>
     /// Пользователь открыл рекламу
     /// </summary>
-    public event Action<int> onRewardedAdOpened;
+    public event Action<int> action_OnRewardedAdOpened;
     /// <summary>
     /// Пользователь должен получить награду за просмотр рекламы
     /// </summary>
-    public event Action<string> onRewardedAdReward;
+    public event Action<string> action_OnRewardedAdReward;
     /// <summary>
     /// Пользователь закрыл рекламу
     /// </summary>
-    public event Action<int> onRewardedAdClosed;
+    public event Action<int> action_OnRewardedAdClosed;
     /// <summary>
     /// Вызов/просмотр рекламы повлёк за собой ошибку
     /// </summary>
-    public event Action<string> onRewardedAdError;
+    public event Action<string> action_OnRewardedAdError;
     /// <summary>
     /// Покупка успешно совершена
     /// </summary>
-    public event Action<string> onPurchaseSuccess;
+    public event Action<string> action_OnPurchaseSuccess;
     /// <summary>
     /// Покупка не удалась: в консоли разработчика не добавлен товар с таким id,
     /// пользователь не авторизовался, передумал и закрыл окно оплаты,
     /// истекло отведенное на покупку время, не хватило денег и т. д.
     /// </summary>
-    public event Action<string> onPurchaseFailed;
+    public event Action<string> action_OnPurchaseFailed;
 
-    public event Action onClose;
-
-    public Queue<int> rewardedAdPlacementsAsInt = new Queue<int>();
-    public Queue<string> rewardedAdsPlacements = new Queue<string>();
+    public event Action action_OnClose;
+    #endregion
 
     private void Awake() {
         if (instance == null) {
@@ -82,38 +110,29 @@ public class YandexSDK : MonoBehaviour {
         }
     }
 
-    public void InitYaSDK()
+    #region Methods
+    public void GetEnvironment()
     {
-        isInited = true;
-    }
-
-    public void Environment(string data)
-    {
-        envData = JsonUtility.FromJson<string>(data);
-        onEnvironmentReceived();
-    }
-    public void GetEnvironmentData()
-    {
-        GetEnvironment();
+        Internal_GetEnvironment();
     }
 
     public void CopyToClipboard(string text)
     {
-        SetToClipboard(text);
+        Internal_SetToClipboard(text);
     }
 
     /// <summary>
     /// Call this to ask user to authenticate
     /// </summary>
     public void Authenticate() {
-        AuthenticateUser();
+        Internal_AuthenticateUser();
     }
 
     /// <summary>
     /// Call this to show interstitial ad. Don't call frequently. There is a 3 minute delay after each show.
     /// </summary>
     public void ShowInterstitial() {
-        ShowFullscreenAd();
+        Internal_ShowFullscreenAd();
     }
 
     /// <summary>
@@ -121,74 +140,102 @@ public class YandexSDK : MonoBehaviour {
     /// </summary>
     /// <param name="placement"></param>
     public void ShowRewarded(string placement) {
-        rewardedAdPlacementsAsInt.Enqueue(ShowRewardedAd(placement));
+        rewardedAdPlacementsAsInt.Enqueue(Internal_ShowRewardedAd(placement));
         rewardedAdsPlacements.Enqueue(placement);
     }
     
     /// <summary>
     /// Call this to receive user data
     /// </summary>
-    public void RequestUserData() {
-        GetUserData();
+    public void GetUserData() {
+        Internal_GetUserData();
     }
     
     public void InitializePurchases() {
-        InitPurchases();
+        Internal_InitPurchases();
     }
 
     public void ProcessPurchase(string id) {
-        Purchase(id);
+        Internal_Purchase(id);
     }
-    
-    public void StoreUserData(string data) {
-        user = JsonUtility.FromJson<UserData>(data);
-        onUserDataReceived();
-    }
-    public void RequestGameData()
+    public void GetGameData()
     {
-        GetGameData();
+        Internal_GetGameData();
     }
-    public void SaveGameData(string save)
+	
+    public void SetGameData(string save)
     {
-        SetGameData(save);
+        Internal_SetGameData(save);
     }
+    #endregion
 
-    public void GameUserData(string data)
-    {
-        gameSave = JsonUtility.FromJson<string>(data);
-        onGameDataReceived();
+    #region Callbacks
+    /// <summary>
+    /// Callback from index.html
+    /// </summary>
+    public void Callback_InitYaSDK() {
+        isInited = true;
+        action_initSdkCompleted();
     }
 
     /// <summary>
     /// Callback from index.html
     /// </summary>
-    public void OnInterstitialShown() {
-        onInterstitialShown();
+    /// <param name="data"></param>
+    public void Callback_Environment(string data) {
+        envData = JsonUtility.FromJson<string>(data);
+        action_OnEnvironmentReceived();
+    }
+
+    /// <summary>
+    /// Callback from index.html
+    /// </summary>
+    /// <param name="data"></param>
+    public void Callback_StoreUserData(string data) {
+        user = JsonUtility.FromJson<UserData>(data);
+        action_OnUserDataReceived();
+    }
+
+    /// <summary>
+    /// Callback from index.html
+    /// </summary>
+    /// <param name="data"></param>
+    public void Callback_GameUserData(string data)
+    {
+        gameSave = JsonUtility.FromJson<string>(data);
+        action_OnGameDataReceived();
+    }
+
+    /// <summary>
+    /// Callback from index.html
+    /// </summary>
+    public void Callback_OnInterstitialShown() {
+        action_OnInterstitialShown();
     }
 
     /// <summary>
     /// Callback from index.html
     /// </summary>
     /// <param name="error"></param>
-    public void OnInterstitialError(string error) {
-        onInterstitialFailed(error);
+    public void Callback_OnInterstitialError(string error) {
+        action_OnInterstitialFailed(error);
     }
 
     /// <summary>
     /// Callback from index.html
     /// </summary>
     /// <param name="placement"></param>
-    public void OnRewardedOpen(int placement) {
-        onRewardedAdOpened(placement);
+    public void Callback_OnRewardedOpen(int placement) {
+        action_OnRewardedAdOpened(placement);
     }
 
     /// <summary>
     /// Callback from index.html
     /// </summary>
     /// <param name="placement"></param>
-    public void OnRewarded(int placement) {
+    public void Callback_OnRewarded(int placement) {
         if (placement == rewardedAdPlacementsAsInt.Dequeue()) {
-            onRewardedAdReward.Invoke(rewardedAdsPlacements.Dequeue());
+            action_OnRewardedAdReward.Invoke(rewardedAdsPlacements.Dequeue());
         }
     }
 
@@ -196,16 +243,16 @@ public class YandexSDK : MonoBehaviour {
     /// Callback from index.html
     /// </summary>
     /// <param name="placement"></param>
-    public void OnRewardedClose(int placement) {
-        onRewardedAdClosed(placement);
+    public void Callback_OnRewardedClose(int placement) {
+        action_OnRewardedAdClosed(placement);
     }
 
     /// <summary>
     /// Callback from index.html
     /// </summary>
     /// <param name="placement"></param>
-    public void OnRewardedError(string placement) {
-        onRewardedAdError(placement);
+    public void Callback_OnRewardedError(string placement) {
+        action_OnRewardedAdError(placement);
         rewardedAdsPlacements.Clear();
         rewardedAdPlacementsAsInt.Clear();
     }
@@ -214,25 +261,26 @@ public class YandexSDK : MonoBehaviour {
     /// Callback from index.html
     /// </summary>
     /// <param name="id"></param>
-    public void OnPurchaseSuccess(string id) {
-        onPurchaseSuccess(id);
+    public void Callback_OnPurchaseSuccess(string id) {
+        action_OnPurchaseSuccess(id);
     }
 
     /// <summary>
     /// Callback from index.html
     /// </summary>
     /// <param name="error"></param>
-    public void OnPurchaseFailed(string error) {
-        onPurchaseFailed(error);
+    public void Callback_OnPurchaseFailed(string error) {
+        action_OnPurchaseFailed(error);
     }
     
     /// <summary>
     /// Browser tab has been closed
     /// </summary>
     /// <param name="error"></param>
-    public void OnClose() {
-        onClose.Invoke();
+    public void Callback_OnClose() {
+        action_OnClose.Invoke();
     }
+    #endregion
 }
 
 public struct UserData {
@@ -241,13 +289,4 @@ public struct UserData {
     public string avatarUrlSmall;
     public string avatarUrlMedium;
     public string avatarUrlLarge;
-}
-
-public struct EnvironmentData
-{
-    public string id;
-    public string browser_lang;
-    public string i18n_lang;
-    public string i18n_tld;
-    public Dictionary<string, string> query_parameter;
 }

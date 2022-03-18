@@ -1,41 +1,41 @@
 mergeInto(LibraryManager.library, {
-  InitPurchases: function() {
+  Internal_InitPurchases: function() {
     initPayments();
   },
   
-  SetToClipboard: function(text) {
+  Internal_SetToClipboard: function(text) {
 	setToClipboard(text);
   },
   
-  GetEnvironment: function() {
+  Internal_GetEnvironment: function() {
 	getEnvironment();
   },
   
-  GetGameData: function() {
+  Internal_GetGameData: function() {
 	getGameData();
   },
   
-  SetGameData: function(_data) {
+  Internal_SetGameData: function(_data) {
 	setGameData(_data);
   },
 
-  Purchase: function(id) {
+  Internal_Purchase: function(id) {
     buy(id);
   },
 
-  AuthenticateUser: function() {
+  Internal_AuthenticateUser: function() {
     auth();
   },
 
-  GetUserData: function() {
+  Internal_GetUserData: function() {
     getUserData();
   },
 
-  ShowFullscreenAd: function () {
+  Internal_ShowFullscreenAd: function () {
     showFullscrenAd();
   },
 
-  ShowRewardedAd: function(placement) {
+  Internal_ShowRewardedAd: function(placement) {
     showRewardedAd(placement);
     return placement;
   },
