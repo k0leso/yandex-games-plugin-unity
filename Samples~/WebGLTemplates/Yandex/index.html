@@ -212,7 +212,7 @@
                 console.log('Video ad closed. Id: ' + id);
             }, 
             onError: (e) => {
-                var data = {"id" : id, "error" : error};
+                var data = {"id" : id, "error" : e};
                 newInstance.SendMessage('YandexSDK', 'Callback_OnRewardedError', JSON.stringify(data));
                 console.log('Error while open video ad:', e);
             }
