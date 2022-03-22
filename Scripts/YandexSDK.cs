@@ -16,6 +16,7 @@ public class YandexSDK : MonoBehaviour {
     public Queue<string> rewardedAdsPlacements = new Queue<string>();
 
     private bool rewardAdOpened = false;
+    private bool requestGameData = false;
     #endregion
 
     #region Internal
@@ -163,7 +164,11 @@ public class YandexSDK : MonoBehaviour {
     }
     public void GetGameData()
     {
-        Internal_GetGameData();
+        if (!requestGameData)
+        {
+            requestGameData = true;
+            Internal_GetGameData();
+        };
     }
 	
     public void SetGameData(string save)
@@ -205,7 +210,8 @@ public class YandexSDK : MonoBehaviour {
     /// <param name="data"></param>
     public void Callback_GameUserData(string data)
     {
-        gameSave = JsonUtility.FromJson<string>(data);
+        requestGameData = false;
+        gameSave = data;
         action_OnGameDataReceived();
     }
 
@@ -229,26 +235,29 @@ public class YandexSDK : MonoBehaviour {
     /// </summary>
     /// <param name="placement"></param>
     public void Callback_OnRewardedOpen(int placement) {
-        action_OnRewardedAdOpened(placement);
         rewardAdOpened = true;
+        action_OnRewardedAdOpened(placement);
+        Debug.LogWarning("Rewarded Open");
     }
 
     /// <summary>
     /// Callback from index.html
     /// </summary>
     /// <param name="placement"></param>
-    public void Callback_OnRewarded(int placement) {
+    public void Callback_OnRewarded(int placement)
+    {
+        Debug.LogWarning("On Rewarded");
         if (rewardAdOpened)
         {
             if (placement == rewardedAdPlacementsAsInt.Dequeue())
             {
                 action_OnRewardedAdReward.Invoke(rewardedAdsPlacements.Dequeue());
-                rewardAdOpened = false;
             }
+            rewardAdOpened = false;
         }
         else
         {
-            action_OnRewardedAdError("error_no_open_rewarded");
+            action_OnRewardedAdError("error_no_was_opened");
             rewardedAdsPlacements.Clear();
             rewardedAdPlacementsAsInt.Clear();
         }
@@ -260,13 +269,16 @@ public class YandexSDK : MonoBehaviour {
     /// <param name="placement"></param>
     public void Callback_OnRewardedClose(int placement) {
         action_OnRewardedAdClosed(placement);
+        Debug.LogWarning("Rewarded Closed");
     }
 
     /// <summary>
     /// Callback from index.html
     /// </summary>
     /// <param name="placement"></param>
-    public void Callback_OnRewardedError(string placement) {
+    public void Callback_OnRewardedError(string placement)
+    {
+        Debug.LogWarning("Rewarded Error");
         action_OnRewardedAdError(placement);
         rewardedAdsPlacements.Clear();
         rewardedAdPlacementsAsInt.Clear();

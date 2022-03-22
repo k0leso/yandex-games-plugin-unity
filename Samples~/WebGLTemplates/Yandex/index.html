@@ -74,8 +74,8 @@
 #endif
       loadingCover.style.display = "";
 	  
-      var player;
       var sdk;
+      var player = null;
       var payments = null;
 	  var newInstance = null;
 
@@ -130,10 +130,12 @@
 	  }
 	
 	  function auth(){
-		sdk.auth.openAuthDialog().then(() => {
+		  sdk.auth.openAuthDialog().then(() => {
                 // Игрок успешно авторизован, теперь объект Player будет инициализирован.
                 initPlayer();
                 console.log('auth ok');
+				location.reload();
+				window.location.reload();
             }).catch(() => {
                  // Игрок не авторизован.
                  console.log('auth failed');
@@ -141,18 +143,30 @@
       }
 
       function initPlayer(){
-        return sdk.getPlayer().then(_player => {
-                player = _player;       
-            }).catch(err => {
-                // Если игрок не авторизован, выбрасывает исключение USER_NOT_AUTHORIZED.
-            });
+        if (player == null) {
+          sdk.getPlayer().then(_player => {
+            if (typeof _player !== 'undefined') {
+              if (_player !== null) {
+                player = _player; 
+                return true;
+              }
+              return false;
+            }     
+          }).catch(err => {
+            // Если игрок не авторизован, выбрасывает исключение USER_NOT_AUTHORIZED.
+            auth();
+          });
+          return false;
+        }
+        return true;
       }
 	  
 	  function setGameData(_data){
-        if(initPlayer){
+		console.log('request set data');
+        if(initPlayer() === true){
 		  console.log('Try Save');
 		  console.log(_data);
-		  player.setData({data : _data}, true).then(()=>{
+		  player.setData({"data" : _data}, true).then(()=>{
 			console.log('saved');
 		  }).catch(()=>{console.log('unsaved')});
 		}
@@ -162,25 +176,31 @@
 	    YaGames.init()
         .then(ysdk => {
             sdk = ysdk;
+            initPlayer();
             newInstance.SendMessage('YandexSDK', 'Callback_InitYaSDK');
 	    });
 	  }
 
       function getUserData(){
-        if(initPlayer){
+        if(initPlayer() === true){
           var data = {"id" : player.getID(), "name" : player.getName(), "avatarUrlSmall" : player.getPhoto('small'), "avatarUrlMedium" : player.getPhoto('medium'), "avatarUrlLarge" : player.getPhoto('large')};
           newInstance.SendMessage('YandexSDK', 'Callback_StoreUserData', JSON.stringify(data));
         }
       }
 	  
 	  function getGameData(){
-        if(initPlayer){
-			player.getData().then(_data =>{
-			  console.log('Data is getting');
-			  console.log(JSON.stringify(_data));
-			  newInstance.SendMessage('YandexSDK', 'Callback_GameUserData', JSON.stringify(_data));
-		   });
-		}
+      console.log('request save data');
+      if(initPlayer() === true){
+        console.log('Plaer inited. request save data');
+        console.log(JSON.stringify(player));
+		let _keys = ["data"];
+        player.getData(_keys).then(_data =>{
+          console.log('Data is getting');
+		  let _save = _data["data"];
+          console.log(_save);
+          newInstance.SendMessage('YandexSDK', 'Callback_GameUserData', _save);
+        });
+      }
 	  }
 
       function showFullscrenAd(){
@@ -199,22 +219,22 @@
       function showRewardedAd(id){
         sdk.adv.showRewardedVideo({
         callbacks: {
-            onOpen: () => {
-                newInstance.SendMessage('YandexSDK', 'Callback_OnRewardedOpen', id);
-                console.log('Video ad open. Id: ' + id);
-            },
-            onRewarded: () => {
-                newInstance.SendMessage('YandexSDK', 'Callback_OnRewarded', id);
-                console.log('Rewarded! Id: ' + id);
-            },
             onClose: () => {
-                newInstance.SendMessage('YandexSDK', 'Callback_OnRewardedClose', id);
                 console.log('Video ad closed. Id: ' + id);
+                newInstance.SendMessage('YandexSDK', 'Callback_OnRewardedClose', id);
             }, 
+			onOpen: () => {
+                console.log('Video ad open. Id: ' + id);
+                newInstance.SendMessage('YandexSDK', 'Callback_OnRewardedOpen', id);
+			},
+            onRewarded: () => {
+                console.log('Rewarded! Id: ' + id);
+                newInstance.SendMessage('YandexSDK', 'Callback_OnRewarded', id);
+            },
             onError: (e) => {
                 var data = {"id" : id, "error" : e};
-                newInstance.SendMessage('YandexSDK', 'Callback_OnRewardedError', JSON.stringify(data));
                 console.log('Error while open video ad:', e);
+                newInstance.SendMessage('YandexSDK', 'Callback_OnRewardedError', JSON.stringify(data));
             }
           }
         })

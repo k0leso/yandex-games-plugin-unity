@@ -4,7 +4,7 @@ mergeInto(LibraryManager.library, {
   },
   
   Internal_SetToClipboard: function(text) {
-	setToClipboard(text);
+	setToClipboard(UTF8ToString(text));
   },
   
   Internal_GetEnvironment: function() {
@@ -15,12 +15,12 @@ mergeInto(LibraryManager.library, {
 	getGameData();
   },
   
-  Internal_SetGameData: function(_data) {
-	setGameData(_data);
+  Internal_SetGameData: function(text) {
+	setGameData(UTF8ToString(text));
   },
 
   Internal_Purchase: function(id) {
-    buy(id);
+    buy(UTF8ToString(id));
   },
 
   Internal_AuthenticateUser: function() {
@@ -41,7 +41,7 @@ mergeInto(LibraryManager.library, {
   },
 
   Internal_OpenWindow: function(link){
-    var url = Pointer_stringify(link);
+    var url = UTF8ToString(link);
       document.onmouseup = function()
       {
         window.open(url);
