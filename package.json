@@ -1,10 +1,10 @@
 {
-  "name": "com.k0fe.yandexgamessdk",
-  "author": "k0fe",
+  "name": "com.trumdu.yandexgamessdk",
+  "author": "trumdu",
   "displayName": "Yandex Games SDK",
   "description": "Unofficial Yandex Games SDK provider for Unity.",
   "unity": "2019.4",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "keywords": [
     "yandex",
     "sdk",
