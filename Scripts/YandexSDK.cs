@@ -10,7 +10,6 @@ public class YandexSDK : MonoBehaviour {
     public bool isInited = false;
     public string gameSave = null;
     public UserData user;
-    public string envData;
 
     public Queue<int> rewardedAdPlacementsAsInt = new Queue<int>();
     public Queue<string> rewardedAdsPlacements = new Queue<string>();
@@ -65,7 +64,7 @@ public class YandexSDK : MonoBehaviour {
     /// <summary>
     /// Полученны данные окружения
     /// </summary>
-    public event Action action_OnEnvironmentReceived;
+    public event Action<string> action_OnEnvironmentReceived;
     /// <summary>
     /// Пользователь открыл полноэкранную рекламму
     /// </summary>
@@ -191,8 +190,7 @@ public class YandexSDK : MonoBehaviour {
     /// </summary>
     /// <param name="data"></param>
     public void Callback_Environment(string data) {
-        envData = JsonUtility.FromJson<string>(data);
-        action_OnEnvironmentReceived();
+        action_OnEnvironmentReceived(data);
     }
 
     /// <summary>

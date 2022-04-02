@@ -4,7 +4,7 @@
   "displayName": "Yandex Games SDK",
   "description": "Unofficial Yandex Games SDK provider for Unity.",
   "unity": "2019.4",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "keywords": [
     "yandex",
     "sdk",
