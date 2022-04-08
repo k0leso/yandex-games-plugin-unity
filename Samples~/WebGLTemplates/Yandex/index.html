@@ -108,7 +108,6 @@
       function getEnvironment(){
 		try {
 			let envDt = sdk.environment;
-			console.log('Environment is getting');
 			newInstance.SendMessage('YandexSDK', 'Callback_Environment', JSON.stringify(envDt));
 		} catch (err) {
 		}
@@ -117,7 +116,6 @@
       function setToClipboard(ctext){
 		try {
 			let text = ctext + "";
-			console.log('SetToClipboard: ' + text);
 			sdk.clipboard.writeText(text)
 				.then(() => {
 				
@@ -131,14 +129,11 @@
 	
 	  function auth(){
 		  sdk.auth.openAuthDialog().then(() => {
-                // Игрок успешно авторизован, теперь объект Player будет инициализирован.
                 initPlayer();
-                console.log('auth ok');
 				location.reload();
 				window.location.reload();
             }).catch(() => {
-                 // Игрок не авторизован.
-                 console.log('auth failed');
+			
             });
       }
 
@@ -153,7 +148,7 @@
               return false;
             }     
           }).catch(err => {
-            // Если игрок не авторизован, выбрасывает исключение USER_NOT_AUTHORIZED.
+            // USER_NOT_AUTHORIZED.
 			
           });
           return false;
@@ -162,13 +157,11 @@
       }
 	  
 	  function setGameData(_data){
-		console.log('request set data');
         if(initPlayer() === true){
-		  console.log('Try Save');
-		  console.log(_data);
 		  player.setData({"data" : _data}, true).then(()=>{
-			console.log('saved');
-		  }).catch(()=>{console.log('unsaved')});
+		  }).catch(()=>{
+		  
+		  });
 		}
 	  }
 	  
@@ -181,23 +174,25 @@
 	    });
 	  }
 
+      function getUniqueID(){
+        if(initPlayer() === true){
+          let data = player.getUniqueID();
+          newInstance.SendMessage('YandexSDK', 'Callback_UniqueID', data);
+        }
+      }
+
       function getUserData(){
         if(initPlayer() === true){
-          var data = {"id" : player.getID(), "name" : player.getName(), "avatarUrlSmall" : player.getPhoto('small'), "avatarUrlMedium" : player.getPhoto('medium'), "avatarUrlLarge" : player.getPhoto('large')};
+          let data = {"id" : player.getUniqueID(), "name" : player.getName(), "avatarUrlSmall" : player.getPhoto('small'), "avatarUrlMedium" : player.getPhoto('medium'), "avatarUrlLarge" : player.getPhoto('large')};
           newInstance.SendMessage('YandexSDK', 'Callback_StoreUserData', JSON.stringify(data));
         }
       }
 	  
 	  function getGameData(){
-      console.log('request save data');
       if(initPlayer() === true){
-        console.log('Plaer inited. request save data');
-        console.log(JSON.stringify(player));
 		let _keys = ["data"];
         player.getData(_keys).then(_data =>{
-          console.log('Data is getting');
 		  let _save = _data["data"];
-          console.log(_save);
           newInstance.SendMessage('YandexSDK', 'Callback_GameUserData', _save);
         });
       }
@@ -220,20 +215,16 @@
         sdk.adv.showRewardedVideo({
         callbacks: {
             onClose: () => {
-                console.log('Video ad closed. Id: ' + id);
                 newInstance.SendMessage('YandexSDK', 'Callback_OnRewardedClose', id);
             }, 
 			onOpen: () => {
-                console.log('Video ad open. Id: ' + id);
                 newInstance.SendMessage('YandexSDK', 'Callback_OnRewardedOpen', id);
 			},
             onRewarded: () => {
-                console.log('Rewarded! Id: ' + id);
                 newInstance.SendMessage('YandexSDK', 'Callback_OnRewarded', id);
             },
             onError: (e) => {
                 var data = {"id" : id, "error" : e};
-                console.log('Error while open video ad:', e);
                 newInstance.SendMessage('YandexSDK', 'Callback_OnRewardedError', JSON.stringify(data));
             }
           }
@@ -250,18 +241,13 @@
 
       function buy(id){
         payments.purchase(id).then(purchase => {
-          // Покупка успешно совершена!
           newInstance.SendMessage('YandexSDK', 'Callback_OnPurchaseSuccess', id);
         }).catch(err => {
-          // Покупка не удалась: в консоли разработчика не добавлен товар с таким id,
-          // пользователь не авторизовался, передумал и закрыл окно оплаты,
-          // истекло отведенное на покупку время, не хватило денег и т. д.
           newInstance.SendMessage('YandexSDK', 'Callback_OnPurchaseFailed', err);
         })
       }
 
       window.onbeforeunload = function(e) {
-        console.log("Calling OnClose from Browser!");
         gameInstance.SendMessage("YandexSDK", "Callback_OnClose");
     
         var dialogText = "You game has been saved!  Would you like to continue unloading the page?";

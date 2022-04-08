@@ -15,6 +15,10 @@ mergeInto(LibraryManager.library, {
 	getGameData();
   },
   
+  Internal_GetUniqueID: function() {
+	getUniqueID();
+  },
+  
   Internal_SetGameData: function(text) {
 	setGameData(UTF8ToString(text));
   },

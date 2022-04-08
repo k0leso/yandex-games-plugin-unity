@@ -7,9 +7,10 @@ public class YandexSDK : MonoBehaviour {
 
     #region Parameters
     public static YandexSDK instance;
-    public bool isInited = false;
-    public string gameSave = null;
-    public UserData user;
+    public static bool isInited = false;
+    public static string gameSave = null;
+    public static UserData user;
+    public static string userID = "";
 
     public Queue<int> rewardedAdPlacementsAsInt = new Queue<int>();
     public Queue<string> rewardedAdsPlacements = new Queue<string>();
@@ -39,6 +40,8 @@ public class YandexSDK : MonoBehaviour {
     [DllImport("__Internal")]
     private static extern void Internal_GetGameData();
     [DllImport("__Internal")]
+    private static extern void Internal_GetUniqueID();
+    [DllImport("__Internal")]
     private static extern void Internal_SetGameData(string _data);
     [DllImport("__Internal")]
     private static extern void Internal_InitPurchases();
@@ -57,6 +60,10 @@ public class YandexSDK : MonoBehaviour {
     /// Получены данные игрока
     /// </summary>
     public event Action action_OnUserDataReceived;
+    /// <summary>
+    /// Получены уникальный идентификатор игрока
+    /// </summary>
+    public event Action action_OnUniqueIdReceived;
     /// <summary>
     /// Получены данные игры
     /// </summary>
@@ -192,6 +199,17 @@ public class YandexSDK : MonoBehaviour {
     public void Callback_Environment(string data) {
         action_OnEnvironmentReceived(data);
     }
+	
+    /// <summary>
+    /// Callback from index.html
+    /// </summary>
+    /// <param name="data"></param>
+	public void Callback_UniqueID(string data) {
+        if ((data != null) && (data.Length > 0)) {
+            userID = data;
+            action_OnUniqueIdReceived();
+        }
+	}
 
     /// <summary>
     /// Callback from index.html
