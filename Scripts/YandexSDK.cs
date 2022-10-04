@@ -17,8 +17,6 @@ public class YandexSDK : MonoBehaviour {
     [DllImport("__Internal")]
     private static extern int ShowRewardedAd(string placement);
     [DllImport("__Internal")]
-    private static extern void GerReward();
-    [DllImport("__Internal")]
     private static extern void AuthenticateUser();
     [DllImport("__Internal")]
     private static extern void InitPurchases();
